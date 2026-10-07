@@ -1,0 +1,26 @@
+{{- if .Values.podMonitoring.enabled }}
+{{- if not .Values.appService.managementPort }}
+{{- fail "podMonitoring.enabled requires appService.managementPort: the application port is publicly routed, so metrics must not be served on it" }}
+{{- end }}
+apiVersion: monitoring.googleapis.com/v1
+kind: PodMonitoring
+metadata:
+  name: {{ include "meltano-catalog.fullname" . }}-jvm
+  labels:
+    app.kubernetes.io/name: {{ include "meltano-catalog.name" . }}
+    helm.sh/chart: {{ include "meltano-catalog.chart" . }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ include "meltano-catalog.fullname" . }}-app
+  endpoints:
+  - port: management
+    path: /actuator/prometheus
+    interval: {{ .Values.podMonitoring.interval }}
+  targetLabels:
+    metadata:
+    - pod
+    - container
+{{- end }}
