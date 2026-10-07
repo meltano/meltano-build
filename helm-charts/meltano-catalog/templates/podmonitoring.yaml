@@ -1,7 +1,4 @@
 {{- if .Values.podMonitoring.enabled }}
-{{- if not .Values.appService.managementPort }}
-{{- fail "podMonitoring.enabled requires appService.managementPort: the application port is publicly routed, so metrics must not be served on it" }}
-{{- end }}
 apiVersion: monitoring.googleapis.com/v1
 kind: PodMonitoring
 metadata:
@@ -16,8 +13,8 @@ spec:
     matchLabels:
       app: {{ include "meltano-catalog.fullname" . }}-app
   endpoints:
-  - port: management
-    path: /actuator/prometheus
+  - port: metrics
+    path: /metrics
     interval: {{ .Values.podMonitoring.interval }}
   targetLabels:
     metadata:
