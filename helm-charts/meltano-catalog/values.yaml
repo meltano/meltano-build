@@ -31,10 +31,6 @@ appService:
   httpsPort: 8443
   targetPort: app-http
   internalHttpPort: 8080
-  # Serve actuator (health probes, metrics) on a separate port instead of
-  # internalHttpPort. Empty keeps actuator on the application port. Required by
-  # podMonitoring, since the application port is publicly routed.
-  managementPort: ""
   #
   # Set these PLACEHOLDER values set in deployment script, for production this is usually set as a secure property deploy script and passed in from Azure DevOps
   #
@@ -215,10 +211,11 @@ gcp:
   secrets: {}
   #  persistence_catalog_pass: meltanocloud-staging-db-app-password
 
-# Google Managed Prometheus scrape of the catalog's /actuator/prometheus (JVM
-# memory incl. Metaspace, GC, threads, Hikari, HTTP). Requires
-# appService.managementPort, and `prometheus` in the deployed
-# management.endpoints.web.exposure.include.
+# Google Managed Prometheus scrape of the catalog's JVM metrics (memory incl.
+# Metaspace, classes, GC, threads, Hikari, executors). The catalog serves them on
+# `port` at /metrics, separate from actuator, so the public actuator endpoints are
+# unchanged and this port is reachable only from inside the cluster.
 podMonitoring:
   enabled: false
+  port: 9464
   interval: 60s

@@ -117,27 +117,28 @@ spec:
           - name: ELASTICSEARCH_REBUILD
             value: "{{ .Values.elasticsearch.rebuild }}"
 {{- end }}
-{{- if .Values.appService.managementPort }}
-          # Actuator (health probes, /actuator/prometheus) on its own port. The
-          # application port is routed publicly by the gateway, and /actuator/**
-          # is a public URL in the catalog's security config.
-          - name: MANAGEMENT_SERVER_PORT
-            value: "{{ .Values.appService.managementPort }}"
+{{- if .Values.podMonitoring.enabled }}
+          # Prometheus metrics on their own port (PrometheusScrapeServerConfig in the
+          # catalog), so the actuator endpoints on the public application port stay
+          # exactly as they are. Nothing routes to this port; only the PodMonitoring
+          # scrapes it, pod to pod.
+          - name: CATALOG_METRICS_PROMETHEUSPORT
+            value: "{{ .Values.podMonitoring.port }}"
 {{- end }}
 {{ toYaml .Values.appService.environments | indent 10 }}
         ports:
         - name: app-http
           containerPort: {{ .Values.appService.internalHttpPort }}
-{{- if .Values.appService.managementPort }}
-        - name: management
-          containerPort: {{ .Values.appService.managementPort }}
+{{- if .Values.podMonitoring.enabled }}
+        - name: metrics
+          containerPort: {{ .Values.podMonitoring.port }}
 {{- end }}
         resources:
 {{ toYaml .Values.resources | indent 12 }}
         readinessProbe:
           httpGet:
             path: /actuator/health/readiness
-            port: {{ .Values.appService.managementPort | default .Values.appService.internalHttpPort }}
+            port: {{ .Values.appService.internalHttpPort }}
           initialDelaySeconds: 90
           periodSeconds: 30
           timeoutSeconds: 30
@@ -146,7 +147,7 @@ spec:
         livenessProbe:
           httpGet:
             path: /actuator/health/liveness
-            port: {{ .Values.appService.managementPort | default .Values.appService.internalHttpPort }}
+            port: {{ .Values.appService.internalHttpPort }}
           initialDelaySeconds: 90
           periodSeconds: 30
           timeoutSeconds: 30

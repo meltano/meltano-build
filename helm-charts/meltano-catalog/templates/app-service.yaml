@@ -15,14 +15,5 @@ spec:
     port: {{ .Values.appService.httpPort }}
     targetPort: {{ .Values.appService.targetPort }} # app-http
     protocol: TCP
-{{- if .Values.appService.managementPort }}
-  # Cluster-internal only: the HTTPRoute pins backendRefs to the http port, so
-  # the gateway never routes here. Used by in-cluster scrapers (e.g. Grafana's
-  # json_exporter reading /actuator/health).
-  - name: management
-    port: {{ .Values.appService.managementPort }}
-    targetPort: management
-    protocol: TCP
-{{- end }}
   selector:
     app: {{ template "meltano-catalog.fullname" . }}-app
