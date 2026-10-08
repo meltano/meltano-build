@@ -210,3 +210,12 @@ gcp:
   # anything not in this map continues to come from the Helm appsecrets Secret.
   secrets: {}
   #  persistence_catalog_pass: meltanocloud-staging-db-app-password
+
+# Google Managed Prometheus scrape of the catalog's JVM metrics (memory incl.
+# Metaspace, classes, GC, threads, Hikari, executors). The catalog serves them on
+# `port` at /metrics, separate from actuator, so the public actuator endpoints are
+# unchanged and this port is reachable only from inside the cluster.
+podMonitoring:
+  enabled: false
+  port: 9464
+  interval: 60s
