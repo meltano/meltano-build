@@ -105,6 +105,15 @@ spec:
               secretKeyRef:
                 name: {{ include "meltano-catalog.appsecret-name" (dict "key" "encryptor_pass" "ctx" .) }}
                 key:  encryptor_pass
+{{- if and .Values.gcp.enabled (hasKey (.Values.gcp.secrets | default dict) "local_idp_secret_key") }}
+          # Has no Helm-managed fallback: only an environment that lists the key
+          # in gcp.secrets signs its own tokens.
+          - name: "CATALOG_AUTH_IDPS_LOCAL_SECRETKEY"
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-appsecrets-gcp
+                key:  local_idp_secret_key
+{{- end }}
 {{- if .Values.image.acr }}
           - name: "SPRING_CLOUD_DATAFLOW_CONTAINER_REGISTRY-CONFIGURATIONS_AZURECR__SECRET"
             valueFrom:
