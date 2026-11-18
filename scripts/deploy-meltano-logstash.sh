@@ -20,7 +20,7 @@ fi
 #
 RELEASE=${STAGE}-matatika-logstash
 CHART_VERSION=8.5.1
-IMAGE_TAG=8.15.3
+IMAGE_TAG=8.19.25
 if [ -z "$APP_VERSION" ]; then
 	echo "INFO: APP_VERSION not set, using 'latest'.  NB - helm won't redeploy if there's no changes to the release, even if the pull policy is always";
 	APP_VERSION=latest
